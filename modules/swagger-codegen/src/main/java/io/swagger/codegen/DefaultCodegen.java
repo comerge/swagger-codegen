@@ -801,12 +801,12 @@ public class DefaultCodegen {
         cliOptions.add(CliOption.newBoolean(CodegenConstants.ENSURE_UNIQUE_PARAMS, CodegenConstants
                 .ENSURE_UNIQUE_PARAMS_DESC).defaultValue(Boolean.TRUE.toString()));
 
-        // initalize special character mapping
+        // initialize special character mapping
         initalizeSpecialCharacterMapping();
     }
 
     /**
-     * Initalize special character mapping
+     * Initialize special character mapping
      */
     protected void initalizeSpecialCharacterMapping() {
         // Initialize special characters

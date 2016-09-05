@@ -175,6 +175,9 @@ public class DefaultCodegen {
                         CodegenModel intfModel = allModels.get(intf);
                         if (intfModel != null) {
                             cm.interfaceModels.add(intfModel);
+                            if(cm.parent == null) {
+                                cm.parent = intfModel.classname;
+                            }
                         }
                     }
                 }

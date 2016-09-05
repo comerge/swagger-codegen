@@ -181,4 +181,21 @@ public class TypeScriptAngular2ModelTest {
         Assert.assertEquals(cm.additionalPropertiesType, "models.Children");
         Assert.assertEquals(Sets.intersection(cm.imports, Sets.newHashSet("models.Children")).size(), 1);
     }
+
+    @Test(description = "removes json prefix from model definition")
+    public void shouldRemoveJsonPrefix() {
+        final Model model = new ModelImpl()
+                .description("a map model")
+                .additionalProperties(new RefProperty("#/definitions/Children"));
+        final DefaultCodegen codegen = new TypeScriptAngular2ClientCodegen();
+        final CodegenModel cm = codegen.fromModel("json_sample", model);
+
+        Assert.assertEquals(cm.name, "json_sample");
+        Assert.assertEquals(cm.classname, "Sample");
+        Assert.assertEquals(cm.description, "a map model");
+        Assert.assertEquals(cm.vars.size(), 0);
+        Assert.assertEquals(cm.imports.size(), 1);
+        Assert.assertEquals(cm.additionalPropertiesType, "models.Children");
+        Assert.assertEquals(Sets.intersection(cm.imports, Sets.newHashSet("models.Children")).size(), 1);
+    }
 }

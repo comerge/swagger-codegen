@@ -64,6 +64,25 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     }
 
     @Override
+    public String toOperationId(String operationId) {
+        String[] splittedOperationId = operationId.split("_");
+        return super.toOperationId(splittedOperationId[2]);
+    }
+
+    @Override
+    public String removeNonNameElementToCamelCase(String name) {
+        return removeNonNameElementToCamelCase(name, "[-:;#]");
+    }
+
+    @Override
+    public String toModelName(String name) {
+        if (name.contains("json")) {
+            return super.toModelName(name.replace("json_", ""));
+        }
+        return super.toModelName(name);
+    }
+
+    @Override
     public String getHelp() {
         return "Generates a TypeScript Angular2 client library.";
     }
@@ -75,7 +94,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
         supportingFiles.add(new SupportingFile("apis.mustache", apiPackage().replace('.', File.separatorChar), "api.ts"));
         supportingFiles.add(new SupportingFile("index.mustache", getIndexDirectory(), "index.ts"));
         supportingFiles.add(new SupportingFile("api.module.mustache", getIndexDirectory(), "api.module.ts"));
-        supportingFiles.add(new SupportingFile("rxjs-operators.mustache", getIndexDirectory(), "rxjs-operators.ts"));        
+        supportingFiles.add(new SupportingFile("rxjs-operators.mustache", getIndexDirectory(), "rxjs-operators.ts"));
         supportingFiles.add(new SupportingFile("configuration.mustache", getIndexDirectory(), "configuration.ts"));
         supportingFiles.add(new SupportingFile("variables.mustache", getIndexDirectory(), "variables.ts"));
         supportingFiles.add(new SupportingFile("gitignore", "", ".gitignore"));
@@ -228,7 +247,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
             CodegenModel cm = (CodegenModel) mo.get("model");
             mo.put("tsImports", toTsImports(cm.imports));
         }
-        
+
         return result;
     }
 

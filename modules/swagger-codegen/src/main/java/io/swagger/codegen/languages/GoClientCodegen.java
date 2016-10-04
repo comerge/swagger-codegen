@@ -132,7 +132,7 @@ public class GoClientCodegen extends DefaultCodegen implements CodegenConfig {
             additionalProperties.put(CodegenConstants.HIDE_GENERATION_TIMESTAMP, Boolean.TRUE.toString());
         } else {
             additionalProperties.put(CodegenConstants.HIDE_GENERATION_TIMESTAMP,
-                    Boolean.valueOf((String)additionalProperties().get(CodegenConstants.HIDE_GENERATION_TIMESTAMP).toString()));
+                    Boolean.valueOf(additionalProperties().get(CodegenConstants.HIDE_GENERATION_TIMESTAMP).toString()));
         }
 
         if (additionalProperties.containsKey(CodegenConstants.PACKAGE_NAME)) {
@@ -373,7 +373,7 @@ public class GoClientCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toOperationId(String operationId) {
-        String sanitizedOperationId = new String(sanitizeName(operationId));
+        String sanitizedOperationId = sanitizeName(operationId);
 
         // method name cannot use reserved keyword, e.g. return
         if (isReservedWord(sanitizedOperationId)) {
@@ -414,11 +414,10 @@ public class GoClientCodegen extends DefaultCodegen implements CodegenConfig {
             }
         }
 
-        // this will only import "strings" "fmt" if there are items in pathParams
+        // this will only import "fmt" if there are items in pathParams
         for (CodegenOperation operation : operations) {
             if(operation.pathParams != null && operation.pathParams.size() > 0) {
                 imports.add(createMapping("import", "fmt"));
-                imports.add(createMapping("import", "strings"));
                 break; //just need to import once
             }
         }

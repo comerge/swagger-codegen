@@ -6,7 +6,7 @@
  * @category Class
  * @package  Swagger\Client
  * @author   http://github.com/swagger-api/swagger-codegen
- * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache Licene v2
+ * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License v2
  * @link     https://github.com/swagger-api/swagger-codegen
  */
 
@@ -47,12 +47,11 @@ namespace Swagger\Client;
  * @category Class
  * @package  Swagger\Client
  * @author   http://github.com/swagger-api/swagger-codegen
- * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache Licene v2
+ * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache License v2
  * @link     https://github.com/swagger-api/swagger-codegen
  */
 class Configuration
 {
-
     private static $defaultConfiguration = null;
 
     /**
@@ -60,14 +59,14 @@ class Configuration
      *
      * @var string[]
      */
-    protected $apiKeys = array();
+    protected $apiKeys = [];
 
     /**
      * Associate array to store API prefix (e.g. Bearer)
      *
      * @var string[]
      */
-    protected $apiKeyPrefixes = array();
+    protected $apiKeyPrefixes = [];
 
     /**
      * Access token for OAuth
@@ -95,7 +94,7 @@ class Configuration
      *
      * @var array
      */
-    protected $defaultHeaders = array();
+    protected $defaultHeaders = [];
 
     /**
      * The host
@@ -493,7 +492,7 @@ class Configuration
      */
     public static function getDefaultConfiguration()
     {
-        if (self::$defaultConfiguration == null) {
+        if (self::$defaultConfiguration === null) {
             self::$defaultConfiguration = new Configuration();
         }
 

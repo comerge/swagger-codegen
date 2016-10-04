@@ -100,6 +100,7 @@ public class DefaultCodegen {
     protected List<CliOption> cliOptions = new ArrayList<CliOption>();
     protected boolean skipOverwrite;
     protected boolean supportsInheritance;
+    protected boolean supportsMixins;
     protected Map<String, String> supportedLibraries = new LinkedHashMap<String, String>();
     protected String library;
     protected Boolean sortParamsByRequiredFlag = true;
@@ -889,7 +890,7 @@ public class DefaultCodegen {
                     paramPart.append(param.getName()).append("=");
                     paramPart.append("{");
                     if (qp.getCollectionFormat() != null) {
-                        paramPart.append(param.getName() + "1");
+                        paramPart.append(param.getName()).append("1");
                         if ("csv".equals(qp.getCollectionFormat())) {
                             paramPart.append(",");
                         } else if ("pipes".equals(qp.getCollectionFormat())) {
@@ -898,7 +899,7 @@ public class DefaultCodegen {
                             paramPart.append("\t");
                         } else if ("multi".equals(qp.getCollectionFormat())) {
                             paramPart.append("&").append(param.getName()).append("=");
-                            paramPart.append(param.getName() + "2");
+                            paramPart.append(param.getName()).append("2");
                         }
                     } else {
                         paramPart.append(param.getName());
@@ -1208,6 +1209,7 @@ public class DefaultCodegen {
         } else {
             m.name = name;
         }
+        m.title = escapeText(model.getTitle());
         m.description = escapeText(model.getDescription());
         m.unescapedDescription = model.getDescription();
         m.classname = toModelName(name);
@@ -1237,7 +1239,7 @@ public class DefaultCodegen {
             List<String> required = new ArrayList<String>();
             Map<String, Property> allProperties;
             List<String> allRequired;
-            if (supportsInheritance) {
+            if (supportsInheritance || supportsMixins) {
                 allProperties = new LinkedHashMap<String, Property>();
                 allRequired = new ArrayList<String>();
                 m.allVars = new ArrayList<CodegenProperty>();
@@ -1258,17 +1260,20 @@ public class DefaultCodegen {
                         interfaceModel = allDefinitions.get(_interface.getSimpleRef());
                     }
                     // set first interface with discriminator found as parent
-                    if (parent == null && interfaceModel instanceof ModelImpl && ((ModelImpl) interfaceModel).getDiscriminator() != null) {
+                    if (parent == null
+                            && ((interfaceModel instanceof ModelImpl && ((ModelImpl) interfaceModel).getDiscriminator() != null)
+                            || (interfaceModel instanceof ComposedModel && isDiscriminatorInInterfaceTree((ComposedModel) interfaceModel, allDefinitions)))) {
                         parent = _interface;
                     } else {
                         final String interfaceRef = toModelName(_interface.getSimpleRef());
                         m.interfaces.add(interfaceRef);
                         addImport(m, interfaceRef);
                         if (allDefinitions != null) {
+                            if (!supportsMixins) {
+                                addProperties(properties, required, interfaceModel, allDefinitions);
+                            }
                             if (supportsInheritance) {
                                 addProperties(allProperties, allRequired, interfaceModel, allDefinitions);
-                            } else {
-                                addProperties(properties, required, interfaceModel, allDefinitions);
                             }
                         }
                     }
@@ -1325,6 +1330,30 @@ public class DefaultCodegen {
             }
         }
         return m;
+    }
+
+    /**
+     * Recursively look for a discriminator in the interface tree
+     */
+    private boolean isDiscriminatorInInterfaceTree(ComposedModel model, Map<String, Model> allDefinitions) {
+        if (model == null || allDefinitions == null)
+            return false;
+
+        Model child = ((ComposedModel) model).getChild();
+        if (child instanceof ModelImpl && ((ModelImpl) child).getDiscriminator() != null) {
+            return true;
+        }
+        for (RefModel _interface : model.getInterfaces()) {
+            Model interfaceModel = allDefinitions.get(_interface.getSimpleRef());
+            if (interfaceModel instanceof ModelImpl && ((ModelImpl) interfaceModel).getDiscriminator() != null) {
+                return true;
+            }
+            if (interfaceModel instanceof ComposedModel) {
+
+                return isDiscriminatorInInterfaceTree((ComposedModel) interfaceModel, allDefinitions);
+            }
+        }
+        return false;
     }
 
     protected void addAdditionPropertiesToCodeGenModel(CodegenModel codegenModel, ModelImpl swaggerModel) {
@@ -1406,7 +1435,8 @@ public class DefaultCodegen {
             property.exclusiveMaximum = np.getExclusiveMaximum();
 
             // check if any validation rule defined
-            if (property.minimum != null || property.maximum != null || property.exclusiveMinimum != null || property.exclusiveMaximum != null)
+            // exclusive* are noop without corresponding min/max
+            if (property.minimum != null || property.maximum != null)
                 property.hasValidation = true;
 
             // legacy support
@@ -1576,7 +1606,7 @@ public class DefaultCodegen {
                 List<String> _enum = sp.getEnum();
                 property._enum = new ArrayList<String>();
                 for(String i : _enum) {
-                  property._enum.add(i.toString());
+                  property._enum.add(i);
                 }
                 property.isEnum = true;
 
@@ -1594,7 +1624,7 @@ public class DefaultCodegen {
                 List<String> _enum = sp.getEnum();
                 property._enum = new ArrayList<String>();
                 for(String i : _enum) {
-                  property._enum.add(i.toString());
+                  property._enum.add(i);
                 }
                 property.isEnum = true;
 
@@ -2273,8 +2303,8 @@ public class DefaultCodegen {
             p.uniqueItems = qp.isUniqueItems();
             p.multipleOf = qp.getMultipleOf();
 
-            if (p.maximum != null || p.exclusiveMaximum != null ||
-                    p.minimum != null || p.exclusiveMinimum != null ||
+            // exclusive* are noop without corresponding min/max
+            if (p.maximum != null || p.minimum != null ||
                     p.maxLength != null || p.minLength != null ||
                     p.maxItems != null || p.minItems != null ||
                     p.pattern != null) {
@@ -2357,28 +2387,28 @@ public class DefaultCodegen {
         } else if (Boolean.TRUE.equals(p.isString)) {
             p.example = p.paramName + "_example";
         } else if (Boolean.TRUE.equals(p.isBoolean)) {
-            p.example = new String("true");
+            p.example = "true";
         } else if (Boolean.TRUE.equals(p.isLong)) {
-            p.example = new String("789");
+            p.example = "789";
         } else if (Boolean.TRUE.equals(p.isInteger)) {
-            p.example = new String("56");
+            p.example = "56";
         } else if (Boolean.TRUE.equals(p.isFloat)) {
-            p.example = new String("3.4");
+            p.example = "3.4";
         } else if (Boolean.TRUE.equals(p.isDouble)) {
-            p.example = new String("1.2");
+            p.example = "1.2";
         } else if (Boolean.TRUE.equals(p.isBinary)) {
-            p.example = new String("BINARY_DATA_HERE");
+            p.example = "BINARY_DATA_HERE";
         } else if (Boolean.TRUE.equals(p.isByteArray)) {
-            p.example = new String("B");
+            p.example = "B";
         } else if (Boolean.TRUE.equals(p.isDate)) {
-            p.example = new String("2013-10-20");
+            p.example = "2013-10-20";
         } else if (Boolean.TRUE.equals(p.isDateTime)) {
-            p.example = new String("2013-10-20T19:20:30+01:00");
+            p.example = "2013-10-20T19:20:30+01:00";
         } else if (param instanceof FormParameter &&
                 ("file".equalsIgnoreCase(((FormParameter) param).getType()) ||
                 "file".equals(p.baseType))) {
             p.isFile = true;
-            p.example = new String("/path/to/file.txt");
+            p.example = "/path/to/file.txt";
         }
 
         // set the parameter excample value
@@ -2457,6 +2487,9 @@ public class DefaultCodegen {
             	sec.isKeyInHeader = sec.isKeyInQuery = sec.isApiKey = sec.isBasic = false;
                 sec.isOAuth = true;
                 sec.flow = oauth2Definition.getFlow();
+                if (sec.flow == null) {
+                    throw new RuntimeException("missing oauth flow in " + sec.name);
+                }
                 switch(sec.flow) {
                     case "accessCode":
                         sec.isCode = true;
@@ -2533,8 +2566,7 @@ public class DefaultCodegen {
                 // must be root tmpPath
                 builder.append("root");
             }
-            for (int i = 0; i < parts.length; i++) {
-                String part = parts[i];
+            for (String part : parts) {
                 if (part.length() > 0) {
                     if (builder.toString().length() == 0) {
                         part = Character.toLowerCase(part.charAt(0)) + part.substring(1);
@@ -2589,10 +2621,10 @@ public class DefaultCodegen {
         if (objs != null) {
             for (int i = 0; i < objs.size(); i++) {
                 if (i > 0) {
-                    objs.get(i).secondaryParam = new Boolean(true);
+                    objs.get(i).secondaryParam = true;
                 }
                 if (i < objs.size() - 1) {
-                    objs.get(i).hasMore = new Boolean(true);
+                    objs.get(i).hasMore = true;
                 }
             }
         }
@@ -2603,7 +2635,7 @@ public class DefaultCodegen {
         if (objs != null) {
             for (int i = 0; i < objs.size() - 1; i++) {
                 if (i > 0) {
-                    objs.put("secondaryParam", new Boolean(true));
+                    objs.put("secondaryParam", true);
                 }
                 if (i < objs.size() - 1) {
                     objs.put("hasMore", true);

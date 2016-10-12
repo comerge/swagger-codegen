@@ -18,6 +18,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCodegen {
     private static final SimpleDateFormat SNAPSHOT_SUFFIX_FORMAT = new SimpleDateFormat("yyyyMMddHHmm");
@@ -220,6 +222,13 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
             }
 
             // Convert path to TypeScript template string
+            Pattern logEntry = Pattern.compile("\\{(.*?)\\}");
+            Matcher matchPattern = logEntry.matcher(op.path);
+            while (matchPattern.find()) {
+                String stringToUpperCase = matchPattern.group(1);
+                String upperCasedString = removeNonNameElementToCamelCase(stringToUpperCase, "[-_:;#]");
+                op.path = op.path.replaceAll(stringToUpperCase, upperCasedString);
+            }
             op.path = op.path.replaceAll("\\{(.*?)\\}", "\\$\\{$1\\}");
         }
 

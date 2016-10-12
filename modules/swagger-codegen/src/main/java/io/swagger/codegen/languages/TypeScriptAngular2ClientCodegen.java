@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenModel;
@@ -21,6 +23,7 @@ import io.swagger.models.properties.FileProperty;
 import io.swagger.models.properties.MapProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
+
 
 public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCodegen {
     private static final SimpleDateFormat SNAPSHOT_SUFFIX_FORMAT = new SimpleDateFormat("yyyyMMddHHmm");
@@ -223,6 +226,13 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
             }
 
             // Convert path to TypeScript template string
+            Pattern logEntry = Pattern.compile("\\{(.*?)\\}");
+            Matcher matchPattern = logEntry.matcher(op.path);
+            while (matchPattern.find()) {
+                String stringToUpperCase = matchPattern.group(1);
+                String upperCasedString = removeNonNameElementToCamelCase(stringToUpperCase, "[-_:;#]");
+                op.path = op.path.replaceAll(stringToUpperCase, upperCasedString);
+            }
             op.path = op.path.replaceAll("\\{(.*?)\\}", "\\$\\{$1\\}");
         }
 

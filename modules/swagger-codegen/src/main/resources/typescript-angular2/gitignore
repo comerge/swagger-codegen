@@ -1,3 +1,17 @@
 wwwroot/*.js
 node_modules
 typings
+
+*.map
+*.js
+*.d.ts
+
+npm-debug.log
+
+# IDEs and editors
+.idea
+*.iml
+*.iws
+
+#System Files
+.DS_Store

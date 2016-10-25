@@ -1310,13 +1310,15 @@ public class DefaultCodegen {
             addVars(m, properties, required, allProperties, allRequired);
         } else {
             ModelImpl impl = (ModelImpl) model;
+            if (m != null && impl.getType() != null) {
+                Property p = PropertyBuilder.build(impl.getType(), impl.getFormat(), null);
+                m.dataType = getSwaggerType(p);
+            }
             if(impl.getEnum() != null && impl.getEnum().size() > 0) {
                 m.isEnum = true;
                 // comment out below as allowableValues is not set in post processing model enum
                 m.allowableValues = new HashMap<String, Object>();
                 m.allowableValues.put("values", impl.getEnum());
-                Property p = PropertyBuilder.build(impl.getType(), impl.getFormat(), null);
-                m.dataType = getSwaggerType(p);
             }
             if (impl.getAdditionalProperties() != null) {
                 addAdditionPropertiesToCodeGenModel(m, impl);
@@ -2266,6 +2268,7 @@ public class DefaultCodegen {
             p.dataFormat = cp.dataFormat;
             if(cp.isEnum) {
                 p.datatypeWithEnum = cp.datatypeWithEnum;
+                p.enumName = cp.enumName;
             }
 
             // enum
@@ -2277,6 +2280,7 @@ public class DefaultCodegen {
 
             if (cp.items != null && cp.items.isEnum) {
                 p.datatypeWithEnum = cp.datatypeWithEnum;
+                p.enumName = cp.enumName;
                 p.items = cp.items;
             }
             p.collectionFormat = collectionFormat;
@@ -3170,7 +3174,12 @@ public class DefaultCodegen {
                 buf.append(StringUtils.capitalize(part));
             }
         }
-        return buf.toString().replaceAll("[^a-zA-Z ]", "");
+        String returnTag = buf.toString().replaceAll("[^a-zA-Z0-9_]", "");
+        if (returnTag.matches("\\d.*")) {
+            return "_" + returnTag;
+        } else {
+            return returnTag;
+        }
     }
 
     /**
@@ -3323,5 +3332,24 @@ public class DefaultCodegen {
         }
 
         return pattern;
+    }
+
+    /**
+     * reads propertyKey from additionalProperties, converts it to a boolean and
+     * writes it back to additionalProperties to be usable as a boolean in
+     * mustache files.
+     * 
+     * @param propertyKey
+     * @return property value as boolean
+     */
+    public boolean convertPropertyToBooleanAndWriteBack(String propertyKey) {
+        boolean booleanValue = false;
+        if (additionalProperties.containsKey(propertyKey)) {
+            booleanValue = Boolean.valueOf(additionalProperties.get(propertyKey).toString());
+            // write back as boolean
+            additionalProperties.put(propertyKey, booleanValue);
+        }
+
+        return booleanValue;
     }
 }

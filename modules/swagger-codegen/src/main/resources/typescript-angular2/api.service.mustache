@@ -104,8 +104,10 @@ export class {{classname}} {
 
 {{#headers}}
         headers.set('{{baseName}}', String({{paramName}}));
-
 {{/headers}}
+{{#headerParams}}
+        headers.set('{{baseName}}', String({{paramName}}));
+{{/headerParams}}
 
         // to determine the Content-Type header
         let consumes: string[] = [
@@ -120,7 +122,7 @@ export class {{classname}} {
             '{{{mediaType}}}'{{#hasMore}}, {{/hasMore}}
             {{/produces}}
         ];
-        
+
 {{#authMethods}}
         // authentication ({{name}}) required
 {{#isApiKey}}
@@ -152,7 +154,7 @@ export class {{classname}} {
         }
 {{/isOAuth}}
 {{/authMethods}}
-            
+
 {{#hasFormParams}}
         headers.set('Content-Type', 'application/x-www-form-urlencoded');
 {{/hasFormParams}}
@@ -163,7 +165,7 @@ export class {{classname}} {
 
 {{#formParams}}
         if ({{paramName}} !== undefined) {
-            formParams.set('{{baseName}}', <any>{{paramName}}); 
+            formParams.set('{{baseName}}', <any>{{paramName}});
         }
 {{/formParams}}
 

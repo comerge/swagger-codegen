@@ -28,10 +28,12 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     public static final String NPM_VERSION = "npmVersion";
     public static final String NPM_REPOSITORY = "npmRepository";
     public static final String SNAPSHOT = "snapshot";
+    public static final String ANGULAR_MODULE_NAME = "angularModuleName";
 
     protected String npmName = null;
     protected String npmVersion = "1.0.0";
     protected String npmRepository = null;
+    protected String angularModuleName = null;
 
     public TypeScriptAngular2ClientCodegen() {
         super();
@@ -49,6 +51,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
         this.cliOptions.add(new CliOption(NPM_VERSION, "The version of your npm package"));
         this.cliOptions.add(new CliOption(NPM_REPOSITORY, "Use this property to set an url your private npmRepo in the package.json"));
         this.cliOptions.add(new CliOption(SNAPSHOT, "When setting this property to true the version will be suffixed with -SNAPSHOT.yyyyMMddHHmm", BooleanProperty.TYPE).defaultValue(Boolean.FALSE.toString()));
+        this.cliOptions.add(new CliOption(ANGULAR_MODULE_NAME, "The name of the angular module"));
     }
 
     @Override
@@ -90,8 +93,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     public void processOpts() {
         super.processOpts();
         supportingFiles.add(new SupportingFile("models.mustache", modelPackage().replace('.', File.separatorChar), "models.ts"));
-        supportingFiles.add(new SupportingFile("apis.mustache", apiPackage().replace('.', File.separatorChar), "api.ts"));
-        supportingFiles.add(new SupportingFile("providers.mustache", apiPackage().replace('.', File.separatorChar), "providers.ts"));
+        supportingFiles.add(new SupportingFile("apis.mustache", apiPackage().replace('.', File.separatorChar), "index.ts"));
         supportingFiles.add(new SupportingFile("index.mustache", getIndexDirectory(), "index.ts"));
         supportingFiles.add(new SupportingFile("configuration.mustache", getIndexDirectory(), "configuration.ts"));
         supportingFiles.add(new SupportingFile("variables.mustache", getIndexDirectory(), "variables.ts"));
@@ -100,6 +102,11 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
 
         if(additionalProperties.containsKey(NPM_NAME)) {
             addNpmPackageGeneration();
+        }
+
+        if (additionalProperties.containsKey(ANGULAR_MODULE_NAME)) {
+            this.setAngularModuleName(additionalProperties.get(ANGULAR_MODULE_NAME).toString());
+            supportingFiles.add(new SupportingFile("module.mustache", getIndexDirectory(), "module.ts"));
         }
     }
 
@@ -254,6 +261,14 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
 
     public void setNpmVersion(String npmVersion) {
         this.npmVersion = npmVersion;
+    }
+
+    public void setAngularModuleName(String angularModuleName) {
+        this.angularModuleName = angularModuleName;
+    }
+
+    public String getAngularModuleName() {
+        return this.angularModuleName;
     }
 
     public String getNpmRepository() {

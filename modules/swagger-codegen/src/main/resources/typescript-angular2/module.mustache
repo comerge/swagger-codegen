@@ -1,0 +1,20 @@
+import { NgModule, ModuleWithProviders } from '@angular/core';
+import { HttpModule } from "@angular/http";
+
+import { BASE_PATH } from './variables';
+import { APIS } from './api/index';
+
+@NgModule({
+    imports: [HttpModule]
+})
+export class {{angularModuleName}} {
+    static forRoot(basePath: string): ModuleWithProviders {
+        return {
+            ngModule: {{angularModuleName}},
+            providers: [
+                ...APIS,
+                {provide: BASE_PATH, useValue: basePath}
+            ]
+        };
+    }
+}

@@ -484,7 +484,13 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
         if (p instanceof StringProperty) {
             StringProperty dp = (StringProperty) p;
             if (dp.getDefault() != null) {
-                return "\"" + dp.getDefault() + "\"";
+               String _default = dp.getDefault();
+               if (dp.getEnum() == null) {
+                   return "\"" + _default + "\"";
+               } else {
+                   // convert to enum var name later in postProcessModels
+                   return _default;
+               }
             }
         } else if (p instanceof BooleanProperty) {
             BooleanProperty dp = (BooleanProperty) p;
@@ -608,24 +614,24 @@ public abstract class AbstractCSharpCodegen extends DefaultCodegen implements Co
     }
     
     public void setPackageTitle(String packageTitle) {
-		this.packageTitle = packageTitle;
-	}
+        this.packageTitle = packageTitle;
+    }
     
     public void setPackageProductName(String packageProductName) {
-		this.packageProductName = packageProductName;
-	}
+        this.packageProductName = packageProductName;
+    }
 
-	public void setPackageDescription(String packageDescription) {
-		this.packageDescription = packageDescription;
-	}
-	
+    public void setPackageDescription(String packageDescription) {
+        this.packageDescription = packageDescription;
+    }
+    
     public void setPackageCompany(String packageCompany) {
-		this.packageCompany = packageCompany;
-	}
+        this.packageCompany = packageCompany;
+    }
     
     public void setPackageCopyright(String packageCopyright) {
-		this.packageCopyright = packageCopyright;
-	}
+        this.packageCopyright = packageCopyright;
+    }
     
     public void setSourceFolder(String sourceFolder) {
         this.sourceFolder = sourceFolder;

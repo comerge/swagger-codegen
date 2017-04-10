@@ -1,6 +1,7 @@
 wwwroot/*.js
 node_modules
 typings
+dist
 
 *.map
 *.js
@@ -13,5 +14,6 @@ npm-debug.log
 *.iml
 *.iws
 
-#System Files
+# System Files
 .DS_Store
+

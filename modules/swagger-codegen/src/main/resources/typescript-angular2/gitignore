@@ -5,7 +5,9 @@ dist
 
 *.map
 *.js
+!rollup.config.js
 *.d.ts
+model/*.metadata.json
 
 npm-debug.log
 
@@ -16,4 +18,3 @@ npm-debug.log
 
 # System Files
 .DS_Store
-
